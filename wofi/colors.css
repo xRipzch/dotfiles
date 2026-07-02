@@ -1,0 +1,31 @@
+/* CSS variables for wallust
+ * You can use this template by adding the following to wallust.toml:
+css = { src = "wofi.css", dst = "~/.config/wofi/colors.css" }
+ */
+
+:root {
+    --wallpaper: url("/home/ravn/Pictures/Wallpapers/wallhaven-d6lmzo.png");
+
+    /* Special */
+    --background: #0A0D09;
+    --foreground: #B1B5B1;
+    --cursor: #A0A972;
+
+    /* Colors */
+    --color0:  #35322D;
+    --color1:  #525C52;
+    --color2:  #785E56;
+    --color3:  #817C72;
+    --color4:  #CD5D36;
+    --color5:  #8F9D33;
+    --color6:  #DAC6A9;
+    --color7:  #878D86;
+    --color8:  #5E635E;
+    --color9:  #525C52;
+    --color10: #785E56;
+    --color11: #817C72;
+    --color12: #CD5D36;
+    --color13: #8F9D33;
+    --color14: #DAC6A9;
+    --color15: #878D86;
+}

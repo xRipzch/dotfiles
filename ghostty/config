@@ -1,0 +1,53 @@
+font-family = JetBrainsMono Nerd Font
+font-size = 13
+
+background-opacity = 0.92
+background-blur-radius = 20
+
+cursor-style = bar
+cursor-style-blink = true
+
+window-padding-x = 20
+window-padding-y = 16
+adjust-cell-height = 6
+working-directory = home
+window-decoration = false
+
+shell-integration = fish
+shell-integration-features = cursor,sudo,title
+
+scrollback-limit = 10000
+
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+w=close_surface
+keybind = ctrl+shift+n=new_window
+
+confirm-close-surface = false
+
+# Wallust-generated colors (overwrites everything below when regenerated)
+config-file = ~/.config/ghostty/colors.conf
+
+background = #0A0A0A
+foreground = #E8E8E8
+
+selection-background = #1E1E1E
+selection-foreground = #E8E8E8
+
+cursor-color = #C8C8C8
+
+palette = 0=#111111
+palette = 1=#CC4444
+palette = 2=#7AAA7A
+palette = 3=#AAAA44
+palette = 4=#4A7AAA
+palette = 5=#8A6A8A
+palette = 6=#4A9A9A
+palette = 7=#AAAAAA
+palette = 8=#333333
+palette = 9=#DD5555
+palette = 10=#8BBB8B
+palette = 11=#BBBB55
+palette = 12=#5B8BBB
+palette = 13=#9B7B9B
+palette = 14=#5BABAB
+palette = 15=#E8E8E8
