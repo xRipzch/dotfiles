@@ -33,9 +33,9 @@ waybar, wofi, GTK, and the terminal. Waybar additionally samples wallpaper
 luminance to flip between light/dark text and pill backgrounds
 (`scripts/theme/waybar-detection.sh`).
 
-Wallpaper auto-rotates every 30 minutes via a systemd user timer
-(`~/.config/systemd/user/wallpaper-rotate.{service,timer}`, not included here
-since it lives outside `~/.config`).
+Wallpaper auto-rotates every 15 minutes via a systemd user timer
+(`systemd/user/wallpaper-rotate.{service,timer}` — symlink or copy these into
+`~/.config/systemd/user/`, then `systemctl --user enable --now wallpaper-rotate.timer`).
 
 ## Keybinds
 

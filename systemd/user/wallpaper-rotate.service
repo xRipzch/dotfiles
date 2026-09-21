@@ -1,0 +1,6 @@
+[Unit]
+Description=Rotate wallpaper via awww + theme-sync
+
+[Service]
+Type=oneshot
+ExecStart=/home/ravn/.config/scripts/theme/rotate-wallpaper.sh
