@@ -4,8 +4,9 @@ My personal Hyprland rice — Wayland desktop config for Arch Linux.
 
 ## Screenshots
 
-<!-- Add screenshots here, e.g. -->
-<!-- ![Desktop](screenshots/desktop.png) -->
+![Terminals](screenshots/terminals.png)
+
+![Desktop](screenshots/desktop.png)
 
 ## Stack
 
