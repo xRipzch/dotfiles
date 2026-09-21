@@ -378,11 +378,7 @@ main() {
     execute_theme_scripts "$wallpaper"
     reload_system_components
 
-    
-    # Send completion notification
-    send_notification "Theme Manager" "Theme Synchronization Complete" \
-        "🎨 All system components updated successfully" "normal" "preferences-desktop-theme"
-    
+
     log_success "Theme synchronization completed successfully"
     
     # Close waytrogen after successful theme synchronization

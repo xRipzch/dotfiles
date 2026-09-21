@@ -4,28 +4,28 @@ css = { src = "wofi.css", dst = "~/.config/wofi/colors.css" }
  */
 
 :root {
-    --wallpaper: url("/home/ravn/Pictures/Wallpapers/wallhaven-d6lmzo.png");
+    --wallpaper: url("/home/ravn/Pictures/Wallpapers/wallhaven-d69eom.jpg");
 
     /* Special */
-    --background: #0A0D09;
-    --foreground: #B1B5B1;
-    --cursor: #A0A972;
+    --background: #3B4349;
+    --foreground: #BFBBBB;
+    --cursor: #CA9CAA;
 
     /* Colors */
-    --color0:  #35322D;
-    --color1:  #525C52;
-    --color2:  #785E56;
-    --color3:  #817C72;
-    --color4:  #CD5D36;
-    --color5:  #8F9D33;
-    --color6:  #DAC6A9;
-    --color7:  #878D86;
-    --color8:  #5E635E;
-    --color9:  #525C52;
-    --color10: #785E56;
-    --color11: #817C72;
-    --color12: #CD5D36;
-    --color13: #8F9D33;
-    --color14: #DAC6A9;
-    --color15: #878D86;
+    --color0:  #3F4347;
+    --color1:  #584F4F;
+    --color2:  #9C7690;
+    --color3:  #6A859F;
+    --color4:  #8C9381;
+    --color5:  #E599B1;
+    --color6:  #9FD0A6;
+    --color7:  #8A8585;
+    --color8:  #615D5D;
+    --color9:  #584F4F;
+    --color10: #9C7690;
+    --color11: #6A859F;
+    --color12: #8C9381;
+    --color13: #E599B1;
+    --color14: #9FD0A6;
+    --color15: #8A8585;
 }

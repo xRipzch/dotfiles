@@ -6,8 +6,8 @@
   "saved_wallpapers_doc": "Wallpaper State Description",
   "saved_wallpapers": [
     {
-      "monitor": "eDP-1",
-      "path": "/home/ravn/Pictures/Wallpapers/wallhaven-zpyv5o.png",
+      "monitor": "All",
+      "path": "/home/ravn/Pictures/Wallpapers/wallhaven-lyz3d2.png",
       "changer": {
         "Awww": {
           "resize_mode": "Crop",
@@ -37,7 +37,7 @@
     }
   ],
   "monitor_doc": "Monitor Dropdown Id Description",
-  "monitor": "eDP-1",
+  "monitor": "All",
   "sort_by_doc": "The internal numeric identifier in the changer dropdown used by dconf for the currently selected sorting option. Do not change unless you know what you are doing.",
   "sort_by": "Date",
   "invert_sort_doc": "Invert Sort Description",
@@ -128,7 +128,7 @@
   "hide_changer_options_box_doc": "Hide Bottom Bar",
   "hide_changer_options_box": false,
   "theme_doc": "Modifies the appearance of the application. Can be one of the following options:\n\t    Light\n          Dracula\n          Nord\n          SolarizedLight\n          SolarizedDark\n          GruvboxLight\n          GruvboxDark\n          CatppuccinLatte\n          CatppuccinFrappe\n          CatppuccinMacchiato\n          CatppuccinMocha\n          TokyoNight\n          TokyoNightStorm\n          TokyoNightLight\n          KanagawaWave\n          KanagawaDragon\n          KanagawaLotus\n          Moonfly\n          Nightfly\n          Oxocarbon\n          Ferra",
-  "theme": "KanagawaWave",
+  "theme": "TokyoNight",
   "favorite_images_only_doc": "Show favorite images only or all images.",
   "favorite_images_only": false,
   "hyprpaper_fill_mode": "Cover"

@@ -146,7 +146,7 @@
     "interval": 1,
     "tooltip": true,
     "tooltip-format": "CPU Frequency: {avg_frequency} GHz",
-    "on-click": "hyprctl dispatch exec '[float; size 1200 780; center] ghostty -e btop'"
+    "on-click": "hyprctl dispatch exec '[float; size 1200 780; center] /home/ravn/Applications/TMOG-Task-Manager-Linux-x86_64.AppImage'"
   },
   "custom/menu": {
     "format": "<span size='14pt' font='Material Symbols Outlined'>menu_open</span>",
@@ -168,7 +168,7 @@
     "return-type": "json",
     "exec": "~/.config/scripts/system/package-updates.sh",
     "interval": 1800,
-    "on-click": "ghostty -e yay -Syu --noconfirm"
+    "on-click": "ghostty -e bash -c 'paru -Syu --noconfirm; echo; read -p \"Done. Press Enter to close...\"'"
   },
   "network": {
     "format-icons": {

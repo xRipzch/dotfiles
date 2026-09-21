@@ -1,0 +1,16 @@
+# keymap.toml
+
+[[mgr.prepend_keymap]]
+on   = "O"
+run  = 'shell --orphan -- nemo %h > /dev/null 2>&1'
+desc = "Open hovered folder in Nemo"
+
+[[mgr.prepend_keymap]]
+on   = "d"
+run  = "remove --permanently"
+desc = "Permanently delete (bypasses trash)"
+
+[[mgr.prepend_keymap]]
+on   = "D"
+run  = "remove --permanently --force"
+desc = "Permanently delete without confirmation"
