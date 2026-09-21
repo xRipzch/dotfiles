@@ -24,6 +24,7 @@ My personal Hyprland rice — Wayland desktop config for Arch Linux.
 | Theming        | [wallust](https://codeberg.org/explosion-mental/wallust) (wallpaper → color palette) |
 | System monitor | [btop](https://github.com/aristocratos/btop) |
 | Visualizer     | [cava](https://github.com/karlstav/cava) |
+| System info    | [fastfetch](https://github.com/fastfetch-cli/fastfetch) |
 
 ## Theming pipeline
 
