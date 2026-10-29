@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Usage: music title|artist|icon|active   (any MPRIS player via playerctl)
+set -euo pipefail
+
+MICROSECONDS=1000000
+CURL_TIMEOUT=5
+SEEK_DEBOUNCE=0.15
+COVER_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/eww-covers"
+mkdir -p "$COVER_DIR"
+
+players="$(playerctl -l 2>/dev/null || true)"
+
+case "${1:-}" in
+  active) [[ -n "$players" ]] && echo true || echo false ;;
+  title)  playerctl metadata --format '{{ title }}' 2>/dev/null || true ;;
+  artist) playerctl metadata --format '{{ artist }}' 2>/dev/null || true ;;
+  icon)
+    status="$(playerctl status 2>/dev/null || true)"
+    [[ "$status" == "Playing" ]] && echo "󰏤" || echo "󰐊" ;;
+  progress)
+    pos="$(playerctl position 2>/dev/null || echo 0)"
+    len="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    awk -v p="$pos" -v l="$len" -v us="$MICROSECONDS" 'BEGIN { printf "%d\n", (l > 0 ? p * us * 100 / l : 0) }' ;;
+  cover)
+    url="$(playerctl metadata mpris:artUrl 2>/dev/null || true)"
+    case "$url" in
+      file://*) echo "${url#file://}" ;;
+      http*)
+        cached="$COVER_DIR/$(printf '%s' "$url" | md5sum | cut -d' ' -f1)"
+        [[ -s "$cached" ]] || curl -fsSL --max-time "$CURL_TIMEOUT" -o "$cached" "$url" || rm -f "$cached"
+        [[ -s "$cached" ]] && echo "$cached" || echo "" ;;
+      *) echo "" ;;
+    esac ;;
+  seek)
+    # Debounced: a drag fires many changes, only the last one is sent to the player.
+    pct="${2:?usage: music seek PERCENT}"
+    token_file="${XDG_RUNTIME_DIR:-/tmp}/eww-seek-token"
+    printf '%s' "$pct" > "$token_file"
+    sleep "$SEEK_DEBOUNCE"
+    [[ "$(<"$token_file")" == "$pct" ]] || exit 0
+    len="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    seconds="$(awk -v p="$pct" -v l="$len" -v us="$MICROSECONDS" 'BEGIN { printf "%.2f", p / 100 * l / us }')"
+    playerctl position "$seconds" ;;
+  scroll)
+    # eww passes the scroll direction as "up"/"down"
+    case "${2:-}" in
+      up) playerctl previous ;;
+      down) playerctl next ;;
+      *) echo "usage: music scroll up|down" >&2; exit 2 ;;
+    esac ;;
+  loop)
+    [[ "$(playerctl loop 2>/dev/null)" == "None" ]] && echo "󰑗" || echo "󰑖" ;;
+  *) echo "usage: music title|artist|icon|active|progress|cover|seek|scroll" >&2; exit 2 ;;
+esac

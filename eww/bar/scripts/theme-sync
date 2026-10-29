@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Converts the wallust-generated colors.css (GTK @define-color) into
+# SCSS variables so eww follows the wallpaper theme.
+set -euo pipefail
+
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SOURCE_CSS="${1:-$CONFIG_DIR/colors.css}"
+TARGET_SCSS="${2:-$CONFIG_DIR/_colors.scss}"
+
+if [[ ! -r "$SOURCE_CSS" ]]; then
+  echo "theme-sync: cannot read $SOURCE_CSS" >&2
+  exit 1
+fi
+
+# "@define-color color5 #D56E43;" -> "$color5: #D56E43;"
+converted="$(sed -nE 's/^@define-color[[:space:]]+([A-Za-z0-9_-]+)[[:space:]]+(#[0-9A-Fa-f]{3,8});.*$/$\1: \2;/p' "$SOURCE_CSS")"
+
+if [[ -z "$converted" ]]; then
+  echo "theme-sync: no @define-color lines found in $SOURCE_CSS" >&2
+  exit 1
+fi
+
+printf '%s\n' "$converted" > "$TARGET_SCSS"

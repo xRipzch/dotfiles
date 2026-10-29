@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Usage: popup NAME   Toggles one popup window and closes the other popups.
+set -euo pipefail
+
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EWW=(eww --config "$CONFIG_DIR")
+POPUPS=(calendar music_win system_win)
+
+name="${1:?usage: popup NAME}"
+if [[ ! " ${POPUPS[*]} " == *" $name "* ]]; then
+  echo "popup: unknown popup '$name' (known: ${POPUPS[*]})" >&2
+  exit 2
+fi
+
+if "${EWW[@]}" active-windows | grep -q "^$name:"; then
+  "${EWW[@]}" close "$name"
+  exit 0
+fi
+
+for other in "${POPUPS[@]}"; do
+  [[ "$other" != "$name" ]] && "${EWW[@]}" close "$other" 2>/dev/null || true
+done
+"${EWW[@]}" open "$name"

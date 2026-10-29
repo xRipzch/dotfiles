@@ -1,0 +1,267 @@
+;; Ported from saimoomedits/eww-widgets (bspwm/X11) to Hyprland/Wayland.
+;; Keeps the waybar layout: btw button + kanji workspaces left, clock + player centre.
+
+(deflisten workspaces :initial "[]" "scripts/workspaces")
+
+(defpoll clock_time   :interval "1s"  "date +%H:%M")
+(defpoll clock_date   :interval "1m"  "date '+%a %d %b'")
+(defpoll volume :initial "0"       :interval "1s"  "scripts/audio volume")
+(defpoll volume_icon  :interval "1s"  "scripts/audio icon")
+(defpoll mic :initial "0"          :interval "2s"  "scripts/audio mic")
+(defpoll brightness :initial "0"   :interval "2s"  "scripts/brightness")
+(defpoll battery :initial "0"      :interval "15s" "scripts/battery percent")
+(defpoll battery_icon :interval "15s" "scripts/battery icon")
+(defpoll memory :initial "0"       :interval "10s" "scripts/memory")
+(defpoll wifi_icon    :interval "5s"  "scripts/wifi icon")
+(defpoll wifi_ssid    :interval "5s"  "scripts/wifi ssid")
+(defpoll wifi_state   :interval "5s"  "scripts/wifi state")
+(defpoll song_active  :interval "2s"  "scripts/music active")
+(defpoll song_title   :interval "2s"  "scripts/music title")
+(defpoll song_artist  :interval "2s"  "scripts/music artist")
+(defpoll song_icon    :interval "1s"  "scripts/music icon")
+(defpoll cpu          :initial "0" :interval "3s" "scripts/cpu")
+(defpoll song_progress :initial "0" :interval "1s" "scripts/music progress")
+(defpoll muted_state  :interval "1s"  "scripts/audio state")
+(defpoll song_loop    :interval "3s"  "scripts/music loop")
+(defpoll song_cover   :interval "3s"  "scripts/music cover")
+(defpoll big_hour     :interval "1m"  "date +%H")
+(defpoll big_minute   :interval "5s"  "date +%M")
+(defpoll long_date    :interval "1h"  "date '+%A, %B'")
+(defpoll short_date   :interval "1h"  "date '+%d %m %y'")
+(defpoll username     :interval "24h" "whoami")
+(defpoll cal_day      :interval "1h"  "date +%d")
+(defpoll cal_year     :interval "1h"  "date +%Y")
+
+(defvar eww "eww -c $HOME/.config/eww/bar")
+(defvar time_rev false)
+(defvar player_rev false)
+(defvar mic_rev false)
+(defvar seeking false)
+(defvar seek_target 0)
+(defvar wifi_rev false)
+(defvar vol_rev false)
+(defvar bri_rev false)
+(defvar calendar_open false)
+
+;; ---- left ----
+(defwidget btw []
+  (button :class "btw" :onclick "setsid -f ghostty" "󰣇  btw"))
+
+(defwidget ws_list []
+  (box :class "workspaces" :space-evenly false :spacing 4
+    (for ws in workspaces
+      (button :class "ws ${ws.state}" :onclick "${ws.cmd}" "${ws.label}"))))
+
+(defwidget left []
+  (box :class "pill" :space-evenly false :halign "start" :spacing 6
+    (btw)
+    (ws_list)))
+
+;; ---- centre ----
+(defwidget clock []
+  (eventbox :class "clock-hit" :cursor "pointer"
+            :onhover "${eww} update time_rev=true"
+            :onhoverlost "${eww} update time_rev=false"
+            :onclick "scripts/popup calendar"
+    (box :class "clock-box" :space-evenly false :spacing 6
+      (label :class "clock" :text clock_time)
+      (revealer :transition "slideright" :reveal time_rev :duration "350ms"
+        (label :class "clock-date" :text clock_date)))))
+
+;; Cover art ringed by track progress; click toggles play/pause, scroll skips, hover reveals prev/next.
+(defwidget player []
+  (eventbox :class "player-hit" :visible {song_active == "true"}
+            :onhover "${eww} update player_rev=true"
+            :onhoverlost "${eww} update player_rev=false"
+            :onscroll "scripts/music scroll {}"
+    (box :class "player" :space-evenly false :spacing 8
+      (circular-progress :class "player-ring" :value song_progress :thickness 3
+        (button :class "player-cover-btn" :cursor "pointer" :onclick "playerctl play-pause"
+                :onrightclick "playerctl next" :onmiddleclick "playerctl previous"
+          (overlay
+            (box :class "player-cover" :style "background-image: url('${song_cover}');")
+            (label :class "player-state" :text song_icon))))
+      (button :class "player-title" :cursor "pointer" :onclick "scripts/popup music_win"
+        (label :limit-width 28 :text "${song_title}${song_artist != '' ? ' • ' + song_artist : ''}"))
+      (revealer :transition "slideright" :reveal player_rev :duration "250ms"
+        (box :space-evenly false :spacing 2
+          (button :class "player-skip" :cursor "pointer" :onclick "playerctl previous" "󰒮")
+          (button :class "player-skip" :cursor "pointer" :onclick "playerctl next" "󰒭"))))))
+
+(defwidget centre []
+  (box :class "pill" :space-evenly false :halign "center" :spacing 10
+    (clock)
+    (player)))
+
+;; ---- right ----
+(defwidget wifi []
+  (eventbox :onhover "${eww} update wifi_rev=true"
+            :onhoverlost "${eww} update wifi_rev=false"
+    (box :space-evenly false
+      (button :class "icon wifi ${wifi_state}" :onclick "networkmanager_dmenu"
+              :onrightclick "rfkill toggle wifi" wifi_icon)
+      (revealer :transition "slideleft" :reveal wifi_rev :duration "350ms"
+        (label :class "reveal-text" :text wifi_ssid)))))
+
+(defwidget slider_icon [icon rev_var rev value cmd click rclick]
+  (eventbox :onhover "${eww} update ${rev_var}=true"
+            :onhoverlost "${eww} update ${rev_var}=false"
+    (box :space-evenly false
+      (button :class "icon" :onclick click :onrightclick rclick icon)
+      (revealer :transition "slideleft" :reveal rev :duration "350ms"
+        (scale :class "slider" :min 0 :max 101 :value value :onchange cmd)))))
+
+(defwidget ring [value cls icon tip]
+  (button :class "ring-btn" :tooltip tip :onclick "scripts/popup system_win"
+    (box :space-evenly false :spacing 6
+      (circular-progress :class "ring ${cls}" :value value :thickness 4
+        (label :class "ring-icon ${cls}" :text icon))
+      (label :class "ring-text ${cls}" :text "${round(value, 0)}%"))))
+
+(defwidget right []
+  (box :class "pill" :space-evenly false :halign "end" :spacing 8
+    (systray :class "tray" :spacing 8 :icon-size 16 :prepend-new true)
+    (wifi)
+    (slider_icon :icon "󰍬" :rev_var "mic_rev" :rev mic_rev :value mic
+                 :cmd "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ {}%"
+                 :click "pactl set-source-mute @DEFAULT_SOURCE@ toggle" :rclick "pavucontrol")
+    (slider_icon :icon volume_icon :rev_var "vol_rev" :rev vol_rev :value volume
+                 :cmd "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%"
+                 :click "pactl set-sink-mute @DEFAULT_SINK@ toggle" :rclick "pavucontrol")
+    (slider_icon :icon "󰃟" :rev_var "bri_rev" :rev bri_rev :value brightness
+                 :cmd "brightnessctl set {}%" :click "" :rclick "")
+    (ring :value battery :cls "bat" :icon battery_icon :tip "battery ${battery}%")
+    (ring :value memory :cls "mem" :icon "󰍛" :tip "memory ${memory}%")
+    (button :class "icon" :onclick "swaync-client -t -sw" :onrightclick "swaync-client -d -sw" "󰂚")
+    (button :class "icon power" :onclick "wlogout --protocol layer-shell -b 2" "󰐥")))
+
+(defwidget bar_layout []
+  (centerbox :class "bar" :orientation "h"
+    (left)
+    (centre)
+    (right)))
+
+(defwindow bar
+  :monitor 0 :namespace "eww"
+  :windowtype "dock"
+  :stacking "fg"
+  :exclusive true
+  :geometry (geometry :x "0px" :y "8px" :width "99%" :height "30px" :anchor "top center")
+  (bar_layout))
+
+;; ---- calendar popup (click the clock) ----
+(defwindow calendar
+  :monitor 0 :namespace "eww"
+  :stacking "fg"
+  :focusable false
+  :geometry (geometry :x "0px" :y "46px" :width "300px" :anchor "top center")
+  (box :class "cal-box"
+    (calendar :class "cal" :day cal_day :year cal_year)))
+
+;; ---- music popup (click the song title) ----
+(defwidget seekbar [?cls]
+  (eventbox :onhover "${eww} update seeking=true" :onhoverlost "${eww} update seeking=false"
+    (scale :class cls :min 0 :max 100 :value {seeking ? seek_target : song_progress}
+           :onchange "${eww} update seek_target={} && scripts/music seek {}")))
+
+(defwidget music_card []
+  (box :class "card music-card" :space-evenly false :spacing 16
+    (box :class "cover" :style "background-image: url('${song_cover}');")
+    (box :orientation "v" :space-evenly false :spacing 10 :valign "center"
+      (label :class "song-title" :limit-width 16 :text song_title)
+      (label :class "song-artist" :limit-width 20 :text song_artist)
+      (box :space-evenly false :spacing 18 :halign "center"
+        (button :class "ctl" :onclick "playerctl previous" "󰒮")
+        (button :class "ctl big" :onclick "playerctl play-pause" song_icon)
+        (button :class "ctl" :onclick "playerctl next" "󰒭"))
+      (seekbar :cls "slider wide"))))
+
+(defwindow music_win
+  :monitor 0 :namespace "eww" :stacking "fg" :focusable false
+  :geometry (geometry :x "0px" :y "46px" :width "430px" :anchor "top center")
+  (music_card))
+
+;; ---- system popup (click the battery/RAM rings) ----
+(defwidget big_ring [value cls icon title sub]
+  (box :space-evenly false :spacing 14
+    (circular-progress :class "ring big-ring ${cls}" :value value :thickness 9
+      (label :class "big-ring-icon ${cls}" :text icon))
+    (box :orientation "v" :space-evenly false :valign "center"
+      (label :class "stat-title ${cls}" :halign "start" :text title)
+      (label :class "stat-sub" :halign "start" :text sub))))
+
+(defwidget system_card []
+  (box :class "card" :orientation "v" :space-evenly false :spacing 16
+    (big_ring :value battery :cls "bat" :icon battery_icon :title "battery" :sub "${battery}%")
+    (big_ring :value cpu :cls "cpu" :icon "󰻠" :title "cpu" :sub "${cpu}%")
+    (big_ring :value memory :cls "mem" :icon "󰍛" :title "memory" :sub "${memory}%")))
+
+(defwindow system_win
+  :monitor 0 :namespace "eww" :stacking "fg" :focusable false
+  :geometry (geometry :x "-12px" :y "46px" :width "280px" :anchor "top right")
+  (system_card))
+
+;; ---- left dashboard (Super+B, or: eww -c ~/.config/eww/bar open --toggle panel) ----
+(defwidget vbar [value cmd icon]
+  (box :orientation "v" :space-evenly false :spacing 8
+    (scale :class "vslider" :orientation "v" :flipped true :min 0 :max 101
+           :value value :onchange cmd)
+    (label :class "vicon" :text icon)))
+
+(defwidget pie [value cls label]
+  (box :orientation "v" :space-evenly false :spacing 8 :tooltip "${label} ${round(value, 0)}%"
+    (circular-progress :class "pie ${cls}" :value value :thickness 100
+      (label :class "pie-hole" :text " "))
+    (label :class "pie-label" :text label)))
+
+(defwidget quick [icon cmd active ?cls]
+  (button :class "quick ${active ? 'active' : ''} ${cls}" :onclick cmd icon))
+
+(defwidget panel_widget []
+  (box :class "panel" :orientation "v" :space-evenly false :spacing 12
+    ;; header: logo + clock
+    (box :space-evenly false :spacing 16 :class "section"
+      (label :class "avatar" :text "󰣇")
+      (box :orientation "v" :space-evenly false :valign "center" :spacing 2
+        (box :space-evenly false :spacing 10
+          (label :class "big-hour" :text big_hour)
+          (label :class "big-minute" :text big_minute))
+        (label :class "short-date" :halign "start" :text short_date)
+        (label :class "long-date" :halign "start" :text long_date)))
+    ;; music + volume/mic
+    (box :space-evenly false :spacing 10
+      (box :class "section music-section" :space-evenly false :spacing 8 :hexpand true
+        (box :orientation "v" :space-evenly false :spacing 4 :hexpand true :valign "center"
+          (label :class "song-title" :halign "start" :limit-width 17 :text song_title)
+          (label :class "song-artist" :halign "start" :limit-width 16 :text song_artist)
+          (seekbar :cls "hslider"))
+        (box :class "ctl-col" :orientation "v" :space-evenly false :spacing 4
+          (button :class "ctl" :onclick "playerctl previous" "󰅁")
+          (button :class "ctl" :onclick "playerctl play-pause" song_icon)
+          (button :class "ctl" :onclick "playerctl next" "󰅂")
+          (button :class "ctl" :onclick "playerctl loop Playlist" song_loop)))
+      (box :class "section" :space-evenly false :spacing 14
+        (vbar :value volume :cmd "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%" :icon volume_icon)
+        (vbar :value mic :cmd "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ {}%" :icon "󰍬")))
+    ;; pies
+    (box :class "section" :space-evenly true
+      (pie :value battery :cls "bat" :label "BAT")
+      (pie :value cpu :cls "cpu" :label "CPU")
+      (pie :value memory :cls "mem" :label "MEM"))
+    ;; brightness
+    (box :class "section" :space-evenly false :spacing 10
+      (label :class "vicon" :text "󰃟")
+      (scale :class "hslider" :hexpand true :min 0 :max 101 :value brightness
+             :onchange "brightnessctl set {}%"))
+    ;; toggles
+    (box :space-evenly true
+      (quick :icon wifi_icon :cmd "networkmanager_dmenu" :active {wifi_state == "on"})
+      (quick :icon "󰂚" :cmd "swaync-client -t -sw" :active false)
+      (quick :icon volume_icon :cmd "pactl set-sink-mute @DEFAULT_SINK@ toggle" :active {muted_state == "on"})
+      (quick :icon "󰍃" :cmd "hyprctl dispatch 'hl.dsp.exit()'" :active false)
+      (quick :icon "󰐥" :cmd "wlogout --protocol layer-shell -b 2" :active false))))
+
+(defwindow panel
+  :monitor 0 :stacking "fg" :focusable false :namespace "eww"
+  :geometry (geometry :x "8px" :y "54px" :width "340px" :anchor "top left")
+  (panel_widget))

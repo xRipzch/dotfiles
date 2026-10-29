@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Prints backlight percentage (first backlight device brightnessctl finds).
+set -euo pipefail
+brightnessctl -m | head -n 1 | cut -d, -f4 | tr -d '%'

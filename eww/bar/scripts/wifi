@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Usage: wifi icon|ssid|state
+set -euo pipefail
+
+wifi_line() { nmcli -t -f TYPE,STATE,CONNECTION device | grep '^wifi:' | grep -v 'p2p' | head -n 1 || true; }
+
+line="$(wifi_line)"
+state="$(cut -d: -f2 <<<"$line")"
+ssid="$(cut -d: -f3- <<<"$line")"
+
+case "${1:-}" in
+  icon)  [[ "$state" == "connected" ]] && echo "󰤨" || echo "󰤭" ;;
+  ssid)  [[ "$state" == "connected" ]] && echo "$ssid" || echo "offline" ;;
+  state) [[ "$state" == "connected" ]] && echo "on" || echo "off" ;;
+  *) echo "usage: wifi icon|ssid|state" >&2; exit 2 ;;
+esac

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Tests for the pure parts (jq filter, colour conversion) plus a smoke test of each poll script.
+set -uo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+FAILED=0
+
+check() { # name expected actual
+  if [[ "$2" == "$3" ]]; then echo "ok   $1"; else echo "FAIL $1: expected [$2] got [$3]"; FAILED=1; fi
+}
+ws() { jq -c -f "$DIR/scripts/workspaces.jq" "$DIR/tests/fixtures/$1"; }
+
+out="$(ws ws.json)"
+check "five persistent + occupied 7" "1,2,3,4,5,7" "$(jq -r '[.[].id]|join(",")' <<<"$out")"
+check "kanji labels" "一二三四五七" "$(jq -r '[.[].label]|join("")' <<<"$out")"
+check "focused is 3" "focused" "$(jq -r '.[]|select(.id==3).state' <<<"$out")"
+check "occupied is 1" "occupied" "$(jq -r '.[]|select(.id==1).state' <<<"$out")"
+check "empty is 2" "empty" "$(jq -r '.[]|select(.id==2).state' <<<"$out")"
+check "no special when closed" "0" "$(jq '[.[]|select(.state=="special")]|length' <<<"$out")"
+check "special shown" "特別" "$(ws ws_special.json | jq -r '.[]|select(.state=="special").label')"
+
+# Same invocation as scripts/workspaces, against the live compositor
+live="$(timeout 5 "$DIR/scripts/workspaces" 2>&1 | head -n 1 || true)"
+check "live workspaces script emits 5+ entries" "true" "$(jq '. | length >= 5' <<<"$live" 2>/dev/null || echo bad)"
+
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+printf '@define-color color5  #D56E43;\n@define-color background #001319;\n/* c */\n' > "$tmp/c.css"
+"$DIR/scripts/theme-sync" "$tmp/c.css" "$tmp/out.scss"
+check "theme-sync converts" '$color5: #D56E43;|$background: #001319;' "$(paste -sd'|' "$tmp/out.scss")"
+"$DIR/scripts/theme-sync" /nonexistent "$tmp/x.scss" 2>/dev/null
+check "theme-sync fails on missing file" "1" "$?"
+
+for s in "audio volume" "audio icon" "brightness" "battery percent" "memory" "wifi icon" "music active" "cpu" "music progress"; do
+  # shellcheck disable=SC2086
+  [[ -n "$("$DIR/scripts/"$s 2>&1)" ]] && echo "ok   smoke: $s" || { echo "FAIL smoke: $s"; FAILED=1; }
+done
+# seek: 50% must land near half the track length (only when a player is active)
+if [[ "$("$DIR/scripts/music" active)" == "true" ]]; then
+  len_s="$(awk -v l="$(playerctl metadata mpris:length)" 'BEGIN{printf "%d", l/1000000}')"
+  "$DIR/scripts/music" seek 50; sleep 0.5
+  pos="$(playerctl position | cut -d. -f1)"
+  half=$((len_s / 2)); diff=$((pos > half ? pos - half : half - pos))
+  [[ "$diff" -le 2 ]] && echo "ok   seek 50% lands mid-track" || { echo "FAIL seek: pos=$pos half=$half"; FAILED=1; }
+fi
+exit "$FAILED"

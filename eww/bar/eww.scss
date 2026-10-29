@@ -1,0 +1,135 @@
+// Colours come from the wallust palette via scripts/theme-sync -> _colors.scss.
+@import "colors";
+
+$ink: mix($foreground, #ffffff, 70%);
+$pill: rgba($background, 0.78);
+$dim: rgba($ink, 0.4);
+$track: rgba($ink, 0.2);
+$accent: mix($background, $color5, 40%);
+// Palette colours lifted toward the ink so text stays readable on dark pills
+$text-bat: mix($color2, $ink, 45%);
+$text-cpu: mix($color3, $ink, 45%);
+$text-mem: mix($color5, $ink, 45%);
+$text-accent: mix($color6, $ink, 45%);
+$ui-font: "SF Pro", "Noto Sans CJK JP", sans-serif;
+$icon-font: "JetBrainsMono Nerd Font";
+
+* {
+  all: unset;
+  font-family: $ui-font;
+  font-size: 16px;
+  color: $ink;
+}
+
+.bar { background: transparent; }
+
+.pill {
+  background: $pill;
+  border: 1px solid rgba($ink, 0.1);
+  border-radius: 16px;
+  padding: 0 12px;
+  margin: 0 4px;
+}
+
+.btw { font-family: $icon-font; font-weight: bold; margin-right: 6px; }
+
+// Workspaces: same states as the waybar kanji row
+.ws { font-size: 18px; padding: 0 6px; transition: 200ms; }
+.ws.empty { color: $dim; }
+.ws.occupied { color: $ink; }
+.ws.focused { color: $background; background: $text-accent; border-radius: 12px; padding: 0 14px; font-weight: bold; font-size: 20px; }
+.ws.special { color: $text-mem; }
+
+.clock-box { padding: 0 8px; border-radius: 12px; transition: 200ms; }
+.clock-hit:hover .clock-box { background: rgba($ink, 0.08); }
+.clock { font-size: 18px; font-weight: bold; }
+.clock-date { color: $text-mem; }
+
+.player { background: rgba($color6, 0.14); border-radius: 14px; padding: 2px 10px 2px 3px; }
+.player-ring { color: $text-accent; background-color: $track; border-radius: 100%; min-width: 28px; min-height: 28px; }
+.player-cover { background-size: cover; background-position: center; background-color: $track; border-radius: 100%; min-width: 22px; min-height: 22px; margin: 3px; }
+.player-state { font-family: $icon-font; font-size: 12px; color: #ffffff; background: rgba(#000000, 0.45); border-radius: 100%; min-width: 22px; min-height: 22px; margin: 3px; }
+.player-cover-btn:hover .player-state { background: rgba(#000000, 0.65); }
+.player-title { color: $ink; }
+.player-skip { font-family: $icon-font; font-size: 14px; color: $text-accent; padding: 0 4px; }
+.player-skip:hover { color: $ink; }
+
+.icon { font-family: $icon-font; font-size: 18px; padding: 0 6px; }
+.icon.wifi.off { color: $dim; }
+.icon.power { color: $color3; }
+.reveal-text { color: $text-accent; margin-right: 6px; }
+
+.ring {  color: $color6; background-color: $track; border-radius: 100%; }
+.ring.bat { color: $color2; }
+.ring.mem { color: $color5; }
+.ring-icon { font-family: $icon-font; font-size: 14px; min-width: 26px; min-height: 26px; }
+.ring-text { font-size: 15px; font-weight: bold; }
+.ring-btn { padding: 0 6px; }
+.ring-icon.bat, .ring-text.bat { color: $text-bat; }
+.ring-icon.mem, .ring-text.mem { color: $text-mem; }
+
+.slider trough {
+  background-color: $track;
+  border-radius: 16px;
+  min-height: 8px;
+  min-width: 70px;
+  margin: 0 8px 0 2px;
+}
+.slider trough highlight { background-color: $color6; border-radius: 16px; }
+
+tooltip { background: $pill; border-radius: 10px; }
+tooltip label { margin: 6px; }
+
+.cal-box { background: $pill; border: 1px solid rgba($ink, 0.1); border-radius: 16px; padding: 10px; }
+calendar { font-size: 16px; }
+calendar:selected { color: $color6; font-weight: bold; }
+calendar.header { color: $color6; font-weight: bold; }
+calendar.highlight { color: $color5; }
+
+// ---- popups and dashboard ----
+.card { background: $pill; border: 1px solid rgba($ink, 0.1); border-radius: 18px; padding: 18px; }
+.sub-card { background: rgba($ink, 0.05); border-radius: 14px; padding: 14px; }
+.ring.cpu, .big-ring.cpu { color: $color3; }
+.big-ring { background-color: $track; border-radius: 100%; }
+.big-ring-icon { font-family: $icon-font; font-size: 28px; min-width: 64px; min-height: 64px; }
+.ring-pct { font-size: 18px; font-weight: bold; min-width: 56px; min-height: 56px; }
+.stat-title { font-size: 22px; font-weight: bold; }
+.stat-title.bat { color: $text-bat; } .stat-title.cpu { color: $text-cpu; } .stat-title.mem { color: $text-mem; }
+.stat-sub { font-size: 15px; color: rgba($ink, 0.7); }
+.cover { background-size: cover; background-position: center; min-width: 120px; min-height: 120px; border-radius: 16px; background-color: $track; }
+.song-title { font-size: 20px; font-weight: bold; color: $text-accent; }
+.song-artist { color: rgba($ink, 0.75); }
+.ctl { font-family: $icon-font; font-size: 24px; }
+.ctl.big { font-size: 38px; color: $color6; }
+.slider.wide trough { min-width: 220px; }
+
+
+// Button text lives in a child label, which the global * rule colours; set it explicitly per state.
+.ws.empty label { color: $dim; }
+.ws.occupied label { color: $ink; }
+.ws.focused label { color: $background; }
+.ws.special label { color: $text-mem; }
+
+// ---- dashboard panel ----
+.panel { background: $pill; border: 1px solid rgba($ink, 0.1); border-radius: 16px; padding: 12px; }
+.section { background: rgba($ink, 0.06); border-radius: 12px; padding: 12px; }
+.avatar { font-family: $icon-font; font-size: 64px; color: $text-accent; min-width: 90px; min-height: 80px; }
+.big-hour { font-size: 34px; font-weight: bold; }
+.big-minute { font-size: 34px; color: $text-mem; }
+.short-date { font-size: 15px; color: rgba($ink, 0.55); }
+.long-date { font-size: 13px; color: rgba($ink, 0.55); }
+.song-title { font-size: 17px; font-weight: bold; color: $ink; }
+.song-artist { font-size: 14px; color: rgba($ink, 0.6); }
+.ctl-col { background: rgba($ink, 0.06); border-radius: 10px; padding: 6px 2px; }
+.ctl { font-family: $icon-font; font-size: 18px; padding: 0 6px; }
+.hslider trough { background-color: $track; border-radius: 8px; min-height: 6px; min-width: 60px; }
+.hslider trough highlight { background-color: $text-accent; border-radius: 8px; }
+.vslider trough { background-color: $track; border-radius: 12px; min-width: 12px; min-height: 90px; }
+.vslider trough highlight { background-color: $text-accent; border-radius: 12px; }
+.vicon { font-family: $icon-font; font-size: 16px; color: rgba($ink, 0.7); }
+.pie { background-color: $track; border-radius: 100%; color: $text-accent; min-width: 56px; min-height: 56px; }
+.pie-hole { min-width: 56px; min-height: 56px; }
+.pie-label { font-size: 15px; letter-spacing: 1px; }
+.quick { font-family: $icon-font; font-size: 20px; background: rgba($ink, 0.08); border-radius: 10px; min-width: 44px; min-height: 42px; margin: 0 3px; }
+.quick.active { background: $text-accent; }
+.quick.active label { color: $background; }

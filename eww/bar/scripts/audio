@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Usage: audio volume|icon|mic   (PipeWire via wpctl)
+set -euo pipefail
+
+SINK="@DEFAULT_AUDIO_SINK@"
+SOURCE="@DEFAULT_AUDIO_SOURCE@"
+PERCENT_SCALE=100
+LOW_LIMIT=33
+
+read_sink()   { wpctl get-volume "$SINK"; }
+read_source() { wpctl get-volume "$SOURCE"; }
+percent()     { awk -v s="$PERCENT_SCALE" '{printf "%d", $2 * s}'; }
+
+case "${1:-}" in
+  volume) read_sink | percent ;;
+  mic)    read_source | percent ;;
+  icon)
+    out="$(read_sink)"
+    vol="$(printf '%s' "$out" | percent)"
+    if [[ "$out" == *MUTED* ]]; then echo "󰖁"
+    elif (( vol < LOW_LIMIT )); then echo "󰕿"
+    else echo "󰕾"; fi ;;
+  state) [[ "$(read_sink)" == *MUTED* ]] && echo off || echo on ;;
+  *) echo "usage: audio volume|icon|mic|state" >&2; exit 2 ;;
+esac

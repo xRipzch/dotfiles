@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Start (or restart) the eww bar. Safe to bind to a key or exec-once.
+set -euo pipefail
+
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EWW=(eww --config "$CONFIG_DIR")
+DAEMON_START_WAIT=1
+
+"$CONFIG_DIR/scripts/theme-sync"
+
+if pgrep -x eww >/dev/null; then
+  "${EWW[@]}" close-all || echo "launch: close-all failed, killing daemon" >&2
+  "${EWW[@]}" kill || true
+  sleep "$DAEMON_START_WAIT"
+fi
+
+"${EWW[@]}" daemon
+sleep "$DAEMON_START_WAIT"
+"${EWW[@]}" open bar

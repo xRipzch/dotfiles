@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Usage: battery percent|icon|status
+set -euo pipefail
+
+POWER_DIR=/sys/class/power_supply
+LOW_LIMIT=20
+
+bat="$(find "$POWER_DIR" -maxdepth 1 -name 'BAT*' | head -n 1)"
+if [[ -z "$bat" ]]; then
+  echo "battery: no BAT* device in $POWER_DIR" >&2
+  exit 1
+fi
+
+capacity="$(<"$bat/capacity")"
+status="$(<"$bat/status")"
+
+case "${1:-}" in
+  percent) echo "$capacity" ;;
+  status)  echo "$status" ;;
+  icon)
+    if [[ "$status" == "Charging" ]]; then echo "󰂄"
+    elif (( capacity <= LOW_LIMIT )); then echo "󰁺"
+    else echo "󰁹"; fi ;;
+  *) echo "usage: battery percent|icon|status" >&2; exit 2 ;;
+esac

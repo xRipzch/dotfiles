@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Prints CPU usage as a whole percentage, sampled over a short interval.
+set -euo pipefail
+SAMPLE_SECONDS=0.5
+
+read_cpu() { awk '/^cpu / {print $2+$3+$4+$7+$8, $2+$3+$4+$5+$6+$7+$8}' /proc/stat; }
+
+read -r busy1 total1 <<<"$(read_cpu)"
+sleep "$SAMPLE_SECONDS"
+read -r busy2 total2 <<<"$(read_cpu)"
+awk -v b="$((busy2 - busy1))" -v t="$((total2 - total1))" 'BEGIN { printf "%d\n", (t > 0 ? b * 100 / t : 0) }'

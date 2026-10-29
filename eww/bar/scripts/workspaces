@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# deflisten source: prints one JSON line per Hyprland workspace/window event.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FILTER="$SCRIPT_DIR/workspaces.jq"
+SOCKET="${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR not set}/hypr/${HYPRLAND_INSTANCE_SIGNATURE:?HYPRLAND_INSTANCE_SIGNATURE not set}/.socket2.sock"
+
+emit() {
+  jq -nc --argjson ws "$(hyprctl -j workspaces)" --argjson mon "$(hyprctl -j monitors)" \
+    '{ws: $ws, mon: $mon}' | jq -c -f "$FILTER" || echo "workspaces: jq/hyprctl failed" >&2
+}
+
+emit
+socat -u "UNIX-CONNECT:$SOCKET" - | while read -r _; do emit; done
