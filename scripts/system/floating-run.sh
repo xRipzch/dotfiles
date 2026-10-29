@@ -38,4 +38,4 @@ if [ -z "$TERMINAL" ]; then
 fi
 
 # Launch the floating terminal with the specified application
-hyprctl dispatch exec "[float; size $WIDTH $HEIGHT; center] $TERMINAL -e $APP_NAME"
+hyprctl dispatch "hl.dsp.exec_cmd([[$TERMINAL -e $APP_NAME]], { float = true, size = \"$WIDTH $HEIGHT\", center = true })"

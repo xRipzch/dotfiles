@@ -16,4 +16,4 @@ else
     exit 1
 fi
 
-hyprctl dispatch exec "[float; size $WIDTH $HEIGHT; center] ghostty -e $APP"
+hyprctl dispatch "hl.dsp.exec_cmd([[ghostty -e $APP]], { float = true, size = \"$WIDTH $HEIGHT\", center = true })"
