@@ -8,23 +8,23 @@ swaync = { src = "swaync.css", dst = "~/.config/swaync/colors.css" }
 @import url("colors.css");
  */
 
- @define-color cursor #CA9CAA;
- @define-color background #3B4349;
- @define-color foreground #BFBBBB;
- @define-color color0  #3F4347;
- @define-color color1  #584F4F;
- @define-color color2  #9C7690;
- @define-color color3  #6A859F;
- @define-color color4  #8C9381;
- @define-color color5  #E599B1;
- @define-color color6  #9FD0A6;
- @define-color color7  #8A8585;
- @define-color color8  #615D5D;
- @define-color color9  #584F4F;
- @define-color color10 #9C7690;
- @define-color color11 #6A859F;
- @define-color color12 #8C9381;
- @define-color color13 #E599B1;
- @define-color color14 #9FD0A6;
- @define-color color15 #8A8585;
+ @define-color cursor #CD998B;
+ @define-color background #372535;
+ @define-color foreground #B8BAB8;
+ @define-color color0  #41382D;
+ @define-color color1  #636661;
+ @define-color color2  #856278;
+ @define-color color3  #6D9AA9;
+ @define-color color4  #BA7EB1;
+ @define-color color5  #E1795F;
+ @define-color color6  #FCCA81;
+ @define-color color7  #929491;
+ @define-color color8  #666765;
+ @define-color color9  #636661;
+ @define-color color10 #856278;
+ @define-color color11 #6D9AA9;
+ @define-color color12 #BA7EB1;
+ @define-color color13 #E1795F;
+ @define-color color14 #FCCA81;
+ @define-color color15 #929491;
  

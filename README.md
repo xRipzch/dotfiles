@@ -13,7 +13,7 @@ My personal Hyprland rice — Wayland desktop config for Arch Linux.
 | Component      | Tool |
 |----------------|------|
 | Compositor     | [Hyprland](https://hyprland.org/) |
-| Bar            | [Waybar](https://github.com/Alexays/Waybar) |
+| Bar            | [eww](https://github.com/elkowar/eww) |
 | Launcher       | [Wofi](https://hg.sr.ht/~scoopta/wofi) |
 | Notifications  | [SwayNC](https://github.com/ErikReider/SwayNotificationCenter) |
 | Logout menu    | [wlogout](https://github.com/ArtsyMacaw/wlogout) |
@@ -31,9 +31,7 @@ My personal Hyprland rice — Wayland desktop config for Arch Linux.
 
 Wallpaper changes trigger `scripts/theme/theme-sync.sh`, which runs `wallust` to
 generate a color palette from the wallpaper and re-renders templates for
-waybar, wofi, GTK, and the terminal. Waybar additionally samples wallpaper
-luminance to flip between light/dark text and pill backgrounds
-(`scripts/theme/waybar-detection.sh`).
+eww, wofi, swaync, wlogout, Hyprland borders, and the terminal.
 
 Wallpaper auto-rotates every 15 minutes via a systemd user timer
 (`systemd/user/wallpaper-rotate.{service,timer}` — symlink or copy these into
@@ -41,7 +39,7 @@ Wallpaper auto-rotates every 15 minutes via a systemd user timer
 
 ## Keybinds
 
-`$mainMod` = Super. Full binds live in `hypr/keybinds/*.conf`; highlights:
+`$mainMod` = Super. Full binds live in `hypr/keybinds/*.lua`; highlights:
 
 | Bind | Action |
 |------|--------|
@@ -60,8 +58,9 @@ Wallpaper auto-rotates every 15 minutes via a systemd user timer
 ## Structure
 
 ```
-hypr/       Hyprland compositor config, rules, keybinds
-waybar/     Status bar config + style
+hypr/       Hyprland compositor config (Lua), rules, keybinds
+eww/        Status bar widgets
+fontconfig/ Font fallbacks
 wofi/       App launcher style
 wlogout/    Logout menu
 wallust/    Color palette templates
@@ -76,6 +75,12 @@ starship.toml
 ```
 
 ## Notes
+
+Hyprland is configured in Lua (`hypr/hyprland.lua` and the modules it requires).
+The old hyprlang `.conf` files are kept for reference; Hyprland ignores them while
+`hyprland.lua` exists. `hyprlock.conf` and `hypridle.conf` still use the hyprlang format.
+
+The UI font is SF Pro (AUR: `otf-apple-sf-pro`, `otf-sfmono-patched`).
 
 This is a snapshot backup, not a symlink-managed setup — copy the relevant
 folders back into `~/.config` to restore.
