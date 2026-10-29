@@ -31,14 +31,3 @@ hl.bind("ALT + SHIFT + F", exec(SCREENSHOT .. "fullscreen"))
 hl.bind("ALT + SHIFT + W", exec(SCREENSHOT .. "workspace"))
 hl.bind("ALT + SHIFT + S", exec(SCREENSHOT .. "selection"))
 hl.bind(mod .. " + SHIFT + S", exec(SCREENSHOT .. "selection"))
-
--- LAPTOP LID SWITCH HANDLING
--- Note: Remember to modify /etc/systemd/logind.conf before using
-hl.bind("switch:on:Lid Switch", function()
-    hl.monitor({ output = "eDP-1", disabled = true })
-    hl.dispatch(hl.dsp.exec_cmd("hyprctl reload")) -- Lid closed
-end, { locked = true })
-hl.bind("switch:off:Lid Switch", function()
-    hl.monitor({ output = "eDP-1", disabled = false })
-    hl.dispatch(hl.dsp.exec_cmd("hyprctl reload")) -- Lid opened
-end, { locked = true })
