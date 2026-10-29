@@ -17,8 +17,8 @@ address=$(hyprctl clients -j | jq -r --arg class "$WM_CLASS" \
 # Discord keeps running in the tray with no window, so match on the window, not
 # the process - a stale process check would focus nothing and launch nothing.
 if [[ -n "$address" ]]; then
-	hyprctl dispatch focuswindow "address:$address"
+	hyprctl dispatch "hl.dsp.focus({ window = \"address:$address\" })"
 	exit 0
 fi
 
-hyprctl dispatch exec "[float; size $WIDTH $HEIGHT; center] discord"
+hyprctl dispatch "hl.dsp.exec_cmd(\"discord\", { float = true, size = \"$WIDTH $HEIGHT\", center = true })"
