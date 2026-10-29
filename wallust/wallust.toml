@@ -52,7 +52,7 @@ wofi = { src = 'wofi.css', dst = '~/.config/wofi/colors.css' }
 
 hypr = { src = 'hyprland.conf', dst = '~/.config/hypr/border.conf' }
 
-waybar = { src = 'waybar.css', dst = '~/.config/waybar/colors.css' }
+eww = { src = 'eww.css', dst = '~/.config/eww/bar/colors.css' }
 
 wlogout = { src = 'wlogout.css', dst = '~/.config/wlogout/colors.css' }
 
@@ -67,6 +67,8 @@ dunst = { src = 'dunstrc', dst = '~/.config/dunst/dunstrc' }
 hyprswitch = { src = 'hyprswitch.css', dst = '~/.config/hypr/config/hyprswitch.css' }
 
 border = { src = 'border.conf', dst = '~/.config/hypr/config/border.conf' }
+
+border_lua = { src = 'border.lua', dst = '~/.config/hypr/config/border.lua' }
 
 vscode = { src = 'vscode.json', dst = '~/.cache/wallust/colors.json' }
 

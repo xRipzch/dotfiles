@@ -6,7 +6,7 @@
 # Description: Orchestrates system-wide theme updates based on current wallpaper
 # Author: saatvik333
 # Version: 3.0
-# Dependencies: awww, wallust, hyprctl, waybar, dunst, hyprswitch, imagemagick
+# Dependencies: awww, wallust, hyprctl, dunst, hyprswitch, imagemagick
 #===============================================================================
 
 set -euo pipefail
@@ -32,14 +32,10 @@ readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.sh}.lock"
 
 # Script paths
 readonly WOFI_SCRIPT="$CONFIG_DIR/scripts/theme/wofi-colors.sh"
-readonly WAYBAR_SCRIPT="$CONFIG_DIR/scripts/theme/waybar-detection.sh"
 readonly GTK_SCRIPT="$CONFIG_DIR/scripts/theme/gtk-colors.sh"
 
 # Hyprswitch configuration
 readonly HYPRSWITCH_CSS="$CONFIG_DIR/hypr/config/hyprswitch.css"
-
-# Global state
-declare -g SKIP_WAYBAR_DETECTION=0
 
 # --- Wallpaper Management Functions ---
 get_current_wallpaper() {
@@ -81,10 +77,7 @@ process_wallpaper() {
     if [[ "$wallpaper" =~ \.(gif|GIF)$ ]]; then
         log_info "Detected GIF wallpaper, extracting frame for color processing"
         wallpaper=$(extract_gif_frame "$wallpaper" "$GIF_FRAME")
-        SKIP_WAYBAR_DETECTION=1
-        log_debug "Will skip waybar detection for GIF wallpaper"
     else
-        SKIP_WAYBAR_DETECTION=0
         log_debug "Static wallpaper detected, will run full processing"
     fi
     
@@ -138,24 +131,6 @@ update_hyprlock_config() {
 }
 
 # --- Theme Script Execution Functions ---
-execute_waybar_detection() {
-    local -r wallpaper="$1"
-    
-    if [[ $SKIP_WAYBAR_DETECTION -eq 1 ]]; then
-        log_info "Skipping waybar wallpaper detection for GIF"
-        return 0
-    fi
-    
-    validate_executable "$WAYBAR_SCRIPT" "Waybar wallpaper detection script"
-    
-    log_debug "Executing waybar wallpaper detection"
-    if ! "$WAYBAR_SCRIPT" "$wallpaper"; then
-        die "Waybar wallpaper detection script failed"
-    fi
-    
-    log_success "Waybar wallpaper detection completed"
-}
-
 execute_gtk_theme_update() {
     validate_executable "$GTK_SCRIPT" "GTK theme script"
     
@@ -183,8 +158,10 @@ execute_wallust_generation() {
     
     log_debug "Using absolute wallpaper path: $abs_wallpaper"
     
-    # Run wallust with dynamic threshold
-    if ! wallust run "$abs_wallpaper" --dynamic-threshold 2>/dev/null; then
+    # Run wallust with dynamic threshold. --skip-sequences: wallust would push
+    # its raw palette into every open terminal, overriding the readable ANSI
+    # colours from the Ghostty template; Ghostty reloads its config instead.
+    if ! wallust run "$abs_wallpaper" --dynamic-threshold --skip-sequences 2>/dev/null; then
         die "Wallust theme generation failed for: $abs_wallpaper"
     fi
     
@@ -208,8 +185,9 @@ execute_theme_scripts() {
     log_info "Executing theme update scripts"
     
     # Execute scripts in order
-    execute_waybar_detection "$wallpaper"
-    execute_gtk_theme_update
+    # Colloid GTK themes are deliberately not installed (they rebuild on every
+    # pacman -Syu); gtk-colors.sh would fail and abort the palette update.
+    # execute_gtk_theme_update
     execute_wallust_generation "$wallpaper"
     execute_wofi_color_update
     
@@ -225,22 +203,6 @@ reload_hyprland() {
     fi
     
     log_success "Hyprland configuration reloaded"
-}
-
-reload_waybar() {
-    log_debug "Reloading Waybar"
-    
-    # Stop existing waybar processes
-    pkill waybar 2>/dev/null || true
-    sleep 0.5
-    
-    # Start waybar in background
-    if command -v waybar >/dev/null 2>&1; then
-        waybar &>/dev/null &
-        log_success "Waybar reloaded"
-    else
-        die "Waybar command not found"
-    fi
 }
 
 restart_dunst() {
@@ -324,14 +286,46 @@ reload_swaync() {
     swaync-client -rs
 }
 
+reload_ghostty() {
+    # Ghostty re-reads its config, including the wallust-generated colors.conf,
+    # on SIGUSR2 - this recolours open terminals now that wallust skips sequences.
+    if ! pgrep -x ghostty >/dev/null; then
+        log_debug "Ghostty not running, nothing to reload"
+        return 0
+    fi
+
+    if ! pkill -USR2 -x ghostty; then
+        die "Failed to signal Ghostty to reload its configuration"
+    fi
+
+    log_success "Ghostty configuration reloaded"
+}
+
+reload_eww() {
+    # eww does not watch its stylesheet: regenerate its SCSS colours from the
+    # wallust-generated colors.css, then reload the running daemon.
+    local -r eww_sync="$HOME/.config/eww/bar/scripts/theme-sync"
+
+    if ! pgrep -x eww >/dev/null; then
+        log_debug "eww not running, nothing to reload"
+        return 0
+    fi
+
+    "$eww_sync" || die "Failed to regenerate eww colours"
+    eww --config "$HOME/.config/eww/bar" reload || die "Failed to reload eww"
+
+    log_success "eww colours reloaded"
+}
+
 reload_system_components() {
     log_info "Reloading system components"
     
     # Reload components in order
     reload_hyprland
-    # reload_waybar
     # restart_dunst
     reload_swaync
+    reload_eww
+    reload_ghostty
     restart_hyprswitch
     # No plugins are enabled (see hypr/config/plugins.conf), and hyprpm needs a manual
     # `hyprpm update` after headers go stale, so skip this to avoid a failure notification
